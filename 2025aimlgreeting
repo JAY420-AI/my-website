@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy New Year 2025 - Interactive Experience</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+
+        #countdown, #greeting, #name-prompt, #personalized-wish, #resolution-display, #see-you {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        #countdown {
+            font-size: 2rem;
+        }
+
+        #greeting {
+            display: none;
+            font-size: 3rem;
+            animation: fadeout 10s forwards;
+        }
+
+        #name-prompt, #see-you {
+            display: none;
+            font-size: 1.5rem;
+        }
+
+        #personalized-wish {
+            display: none;
+            font-size: 2rem;
+            font-weight: bold;
+            animation: fadein 5s forwards;
+        }
+
+        #resolution-display {
+            display: none;
+            font-size: 1.5rem;
+            animation: fadein 5s forwards;
+        }
+
+        #see-you {
+            display: none;
+            margin-top: 20px; /* Add spacing to make sure it doesn't overlap */
+        }
+
+        @keyframes fadeout {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes fadein {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        #music-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #ff6600;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 5px;
+            z-index: 20;
+        }
+
+        #name-input {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 1rem;
+        }
+
+        #submit-name {
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin-top: 10px;
+            background-color: #ff6600;
+            border: none;
+            cursor: pointer;
+            color: white;
+            border-radius: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="countdown"></div>
+    <div id="greeting">🎉 Happy New Year to AIML! 🎉</div>
+    <div id="name-prompt">
+        <label for="name-input">Enter your name:</label>
+        <input type="text" id="name-input" placeholder="Your Name" />
+        <button id="submit-name">Submit</button>
+    </div>
+    <div id="personalized-wish"></div>
+    <div id="resolution-display"></div>
+    <div id="see-you">
+        <p>See you guys in the class! 😊</p>
+    </div>
+
+    <!-- Music Box Button -->
+    <button id="music-box">🎵 Toggle Music</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.155.0/three.min.js"></script>
+    <script>
+        const countdownElement = document.getElementById("countdown");
+        const greetingElement = document.getElementById("greeting");
+        const namePrompt = document.getElementById("name-prompt");
+        const personalizedWish = document.getElementById("personalized-wish");
+        const resolutionDisplay = document.getElementById("resolution-display");
+        const seeYou = document.getElementById("see-you");
+        const musicBoxButton = document.getElementById("music-box");
+        const nameInput = document.getElementById("name-input");
+        const submitNameButton = document.getElementById("submit-name");
+
+        const newYearTime = new Date('January 1, 2025 00:00:00');
+        let musicPlaying = true; // Track the music state
+        const music = new Audio("https://www.bensound.com/bensound-music/bensound-memories.mp3");
+        music.loop = true;
+        music.volume = 0.5;
+
+        let nameSubmitted = sessionStorage.getItem('nameSubmitted') === 'true';
+        let resolution = localStorage.getItem('resolution');
+        let seeYouTimer;
+
+        function updateCountdown() {
+            const now = new Date();
+            const diff = newYearTime - now;
+
+            if (diff <= 0) {
+                countdownElement.style.display = "none";
+                greetingElement.style.display = "block";
+
+                // Show the greeting for 15 seconds before moving to the next content
+                setTimeout(() => {
+                    greetingElement.style.display = "none"; 
+                    if (!nameSubmitted) {
+                        namePrompt.style.display = "block";
+                    } else {
+                        // Show resolution if exists
+                        if (resolution) {
+                            resolutionDisplay.style.display = "block";
+                            resolutionDisplay.innerHTML = `Your resolution: ${resolution}`;
+                        } else {
+                            resolutionDisplay.style.display = "none";
+                        }
+                        // Delay the "See You" message after resolution
+                        seeYouTimer = setTimeout(() => {
+                            seeYou.style.display = "block";
+                        }, 5000); // Delay for 5 seconds after the resolution
+                    }
+                }, 15000); // Wait for 15 seconds before proceeding
+
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / (1000 * 60)) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            countdownElement.innerHTML = `Time until 2025: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        setInterval(updateCountdown, 1000);
+
+        musicBoxButton.addEventListener("click", () => {
+            if (musicPlaying) {
+                music.pause();
+                musicBoxButton.innerHTML = "🎵 Play Music";
+            } else {
+                music.play();
+                musicBoxButton.innerHTML = "🎵 Pause Music";
+            }
+            musicPlaying = !musicPlaying;
+        });
+
+        submitNameButton.addEventListener("click", () => {
+            const name = nameInput.value.trim();
+            if (name) {
+                sessionStorage.setItem('nameSubmitted', 'true');
+                nameSubmitted = true;
+
+                namePrompt.style.display = "none";
+
+                // Show the personalized wish
+                personalizedWish.style.display = "block";
+                personalizedWish.innerHTML = `🎉 Happy New Year, ${name}! 🎉<br>May this year bring you joy and success!`;
+
+                // Wait 15 seconds, then hide the personalized wish and store the resolution
+                setTimeout(() => {
+                    personalizedWish.style.display = "none";
+
+                    // Ask for the resolution and store it in localStorage
+                    const userResolution = prompt("What's your New Year's resolution?");
+                    if (userResolution) {
+                        localStorage.setItem('resolution', userResolution);
+                    }
+                    resolution = userResolution;
+
+                    // Show the resolution and delay the "See You" message
+                    if (resolution) {
+                        resolutionDisplay.style.display = "block";
+                        resolutionDisplay.innerHTML = `Your resolution: ${resolution}`;
+                    }
+
+                    // Show the "See you" message after a delay
+                    seeYouTimer = setTimeout(() => {
+                        seeYou.style.display = "block";
+                    }, 5000); // 5 seconds delay after resolution
+                }, 15000); // 15 seconds delay before storing and showing resolution
+            } else {
+                alert("Please enter your name!");
+            }
+        });
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 5000;
+        const particlesArray = new Float32Array(particlesCount * 3);
+
+        for (let i = 0; i < particlesCount * 3; i++) {
+            particlesArray[i] = (Math.random() - 0.5) * 50;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particlesArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.1,
+            color: 0xffffff,
+            opacity: 0.8
+        });
+
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
+
+        camera.position.z = 20;
+
+        const colors = [
+            0xFF5733, 0xFF8D1A, 0x8D1AFF, 0xD71AFF, 0xFF1AD7, 0x7DFF1A,
+            0xFFDA1A, 0x6BFF3F, 0x1AFFDA
+        ];
+
+        let colorIndex = 0;
+        let lastColorChange = Date.now();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.x += 0.002;
+            particles.rotation.y += 0.002;
+
+            // Change color every 3 seconds
+            if (Date.now() - lastColorChange > 3000) {
+                const newColor = colors[Math.floor(Math.random() * colors.length)];
+                particlesMaterial.color.setHex(newColor);
+                lastColorChange = Date.now();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
+
